@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+
+{% if _postfix.default_aliases is defined %}
+{% set _dummy = _postfix.aliases.update(_postfix.default_aliases) %}
+{% endif %}
+{% for alias, list in _postfix.aliases.iteritems() %}
+{% if list %}
+{{ "%-24s" | format(alias + ":") }} {{ list | join(", ") }}
+{% else %}
+{{ "%-24s" | format(alias + ":") }} {{ _postfix.default_alias_recipients | join(", ") }}
+{% endif %}
+{% endfor %}

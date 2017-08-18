@@ -1,0 +1,22 @@
+---
+# defaults file for ansible-role-update_postfix_config
+
+_postfix:
+  domain: domain.example.com
+  default_aliases:
+    root: []
+    postmaster: [ root ]
+  default_alias_recipients:
+    - "default@example.com"
+  aliases:
+    explicit:
+      - "explicit1@example.com"
+      - "explicit2@example.com"
+  relay:
+    host: "smarthost.example.com"
+    port: 465
+
+# Optional
+_sasl:
+  username: abc
+  password: def

@@ -1,0 +1,35 @@
+# vim:ft=ansible:ts=2:et:
+---
+
+- name: Create postfix configuration file
+  template: src=etc/postfix/main.cf.j2 dest=/etc/postfix/main.cf mode=0644 owner=root group=root
+
+- name: Set /etc/mailname
+  copy: content="{{ ansible_hostname }}.{{ _postfix.domain }}" dest=/etc/mailname owner=root group=root mode=0644
+
+- block:
+    - name: Create Source File for SASL Password Map
+      template: src="{{ item }}.j2" dest="/{{ item }}" owner=root group=root mode=0600
+      with_items:
+        - "etc/postfix/sasl_passwd"
+
+    - name: Create Postfix SASL Map
+      command: postmap hash:/etc/postfix/sasl_passwd
+
+    - name: Restrict permissions on Postfix SASL Map
+      file: name="/etc/postfix/sasl_passwd.db" mode=0640 owner=root group=postfix
+
+  always:
+    - name: Delete Temp File for SASL Passwords
+      file: name="/etc/postfix/sasl_passwd" state=absent
+
+  when: _sasl is defined
+
+- name: Create aliases
+  register: changed_aliases
+  template: src=etc/aliases.j2 dest=/etc/aliases mode=0644 owner=root group=root
+
+- name: Convert aliases
+  command: /usr/bin/newaliases
+  when: changed_aliases|changed
+
