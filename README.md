@@ -2,7 +2,7 @@ Configure Postfix
 =========
 
 
-[![Build Status](https://travis-ci.org/Rheinwerk/ansible-role-postfix.svg?branch=master)](https://travis-ci.org/Rheinwerk/ansible-role-postfix)
+[![Build Status](https://travis-ci.org/Rheinwerk/ansible-role-update_postfix_config.svg?branch=master)](https://travis-ci.org/Rheinwerk/ansible-role-update_postfix_config)
 
 Requirements
 ------------
