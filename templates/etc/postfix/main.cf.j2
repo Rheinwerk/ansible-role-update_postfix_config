@@ -21,6 +21,7 @@ smtpd_relay_restrictions = permit_mynetworks defer_unauth_destination
 myhostname = {{ ansible_hostname }}.{{ _postfix.domain }}
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
+header_checks = regexp:/etc/postfix/header_checks
 myorigin = /etc/mailname
 {% if _postfix.relay is defined %}
 relayhost = [{{ _postfix.relay.host }}]:{{ _postfix.relay.port }}

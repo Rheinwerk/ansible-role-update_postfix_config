@@ -1,6 +1,12 @@
 ---
 # defaults file for ansible-role-update_postfix_config
 
+CD_ENV:
+  iaas:
+    name: "unset"
+    account: "unset"
+    env: "unset"
+
 _postfix:
   domain: domain.example.com
   default_aliases:

@@ -33,3 +33,6 @@
   command: /usr/bin/newaliases
   when: changed_aliases|changed
 
+- name: Create header_checks file
+  template: src=etc/postfix/header_checks.j2 dest=/etc/postfix/header_checks mode=0644 owner=root group=root
+
