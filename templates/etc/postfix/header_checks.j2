@@ -1,2 +1,3 @@
+if !/^Subject: .*Vielen.Dank.*.Nachricht.an.CenterDevice.*/
 /^Subject: (.*?)$/ REPLACE Subject: [{{CD_ENV.iaas.name}}.{{CD_ENV.iaas.account}}.{{CD_ENV.iaas.env}}] $1
-
+endif
