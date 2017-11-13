@@ -21,6 +21,9 @@ _postfix:
   relay:
     host: "smarthost.example.com"
     port: 465
+  # Optional
+  tagging_transport:
+    recipient_regexp_filter: "someone.*@example.com"
 
 # Optional
 _sasl:
