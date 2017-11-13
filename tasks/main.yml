@@ -49,8 +49,7 @@
     - name: Add taggingsmtp transport to master.cf
       path: /etc/postfix/master.cf
       regexp: '^taggingsmtp'
-      insertafter:' ^smtp.*unix.*smtp$'
+      insertafter: '^smtp.*unix.*smtp$'
       line: 'taggingsmtp      unix  -       -       -       -       -       smtp -o smtp_header_checks=regexp:/etc/postfix/header_checks'
 
-  when:
-    _postfix.tagging_transport is defined
+  when: _postfix.tagging_transport is defined
