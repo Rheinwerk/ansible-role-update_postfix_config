@@ -41,15 +41,17 @@
       template: src=etc/postfix/transport_maps.j2 dest=/etc/postfix/transport_maps mode=0644 owner=root group=root
 
     - name: Add transport_maps to main.cf
-      path: /etc/postfix/main.cf
-      regexp: '^transport_maps'
-      insertafter: '^relayhost'
-      line: 'transport_maps = regexp:/etc/postfix/transport_maps'
+      lineinfile:
+        path: /etc/postfix/main.cf
+        regexp: '^transport_maps'
+        insertafter: '^relayhost'
+        line: 'transport_maps = regexp:/etc/postfix/transport_maps'
 
     - name: Add taggingsmtp transport to master.cf
-      path: /etc/postfix/master.cf
-      regexp: '^taggingsmtp'
-      insertafter: '^smtp.*unix.*smtp$'
-      line: 'taggingsmtp      unix  -       -       -       -       -       smtp -o smtp_header_checks=regexp:/etc/postfix/header_checks'
+      lineinfile:
+        path: /etc/postfix/master.cf
+        regexp: '^taggingsmtp'
+        insertafter: '^smtp.*unix.*smtp$'
+        line: 'taggingsmtp      unix  -       -       -       -       -       smtp -o smtp_header_checks=regexp:/etc/postfix/header_checks'
 
   when: _postfix.tagging_transport is defined
