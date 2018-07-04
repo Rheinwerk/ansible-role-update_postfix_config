@@ -7,4 +7,3 @@
     - apt: pkg=postfix state=installed
   roles:
     - ansible-role-update_postfix_config
-
