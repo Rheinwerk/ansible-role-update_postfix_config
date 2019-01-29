@@ -3,7 +3,7 @@
 {% if _postfix.default_aliases is defined %}
 {% set _dummy = _postfix.aliases.update(_postfix.default_aliases) %}
 {% endif %}
-{% for alias, list in _postfix.aliases.iteritems() %}
+{% for alias, list in _postfix.aliases.items() %}
 {% if list %}
 {{ "%-24s" | format(alias + ":") }} {{ list | join(", ") }}
 {% else %}
