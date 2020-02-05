@@ -4,6 +4,6 @@
   become: yes
   become_user: root
   pre_tasks:
-    - apt: pkg=postfix state=installed
+    - apt: pkg=postfix state=present
   roles:
     - ansible-role-update_postfix_config
