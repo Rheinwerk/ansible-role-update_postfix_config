@@ -1,0 +1,3 @@
+- name: Convert aliases
+  command: /usr/bin/newaliases
+  changed_when: false
