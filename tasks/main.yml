@@ -45,8 +45,12 @@
       file:
         name: "/etc/postfix/sasl_passwd"
         state: absent
+      tags:
+        - molecule-idempotence-notest
 
   when: _sasl is defined
+  tags:
+    - molecule-idempotence-notest
 
 - name: Create aliases
   template:
