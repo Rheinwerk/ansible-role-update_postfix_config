@@ -18,6 +18,9 @@
     mode: 0644
 
 - name: Configure Postfix _sasl
+  when: _sasl is defined
+  tags:
+    - molecule-idempotence-notest
   block:
     - name: Create Source File for SASL Password Map
       template:
@@ -48,10 +51,6 @@
       tags:
         - molecule-idempotence-notest
 
-  when: _sasl is defined
-  tags:
-    - molecule-idempotence-notest
-
 - name: Create aliases
   template:
     src: etc/aliases.j2
@@ -62,6 +61,7 @@
   notify: Convert aliases
 
 - name: Configure Postfix tagging transport
+  when: _postfix.tagging_transport is defined
   block:
     - name: Create header_checks file
       template:
@@ -92,5 +92,3 @@
         regexp: '^taggingsmtp'
         insertafter: '^smtp.*unix.*smtp$'
         line: 'taggingsmtp      unix  -       -       -       -       -       smtp -o smtp_header_checks=regexp:/etc/postfix/header_checks'
-
-  when: _postfix.tagging_transport is defined
