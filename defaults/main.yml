@@ -1,7 +1,7 @@
 ---
 # defaults file for ansible-role-update_postfix_config
 
-CD_ENV:
+CD_ENV: # noqa var-naming
   iaas:
     name: "unset"
     account: "unset"
