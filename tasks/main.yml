@@ -79,13 +79,6 @@
         owner: root
         group: root
 
-    - name: Add transport_maps to main.cf
-      lineinfile:
-        path: /etc/postfix/main.cf
-        regexp: '^transport_maps'
-        insertafter: '^relayhost'
-        line: 'transport_maps = regexp:/etc/postfix/transport_maps'
-
     - name: Add taggingsmtp transport to master.cf
       lineinfile:
         path: /etc/postfix/master.cf
