@@ -22,13 +22,13 @@ myhostname = {{ ansible_hostname }}.{{ _postfix.domain }}
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 myorigin = /etc/mailname
-{% if _postfix.relay is defined %}
+{% if _postfix.relay is defined and _postfix.relay | length  %}
 relayhost = [{{ _postfix.relay.host }}]:{{ _postfix.relay.port }}
 {% endif %}
 {% if _postfix.tagging_transport is defined %}
 transport_maps = regexp:/etc/postfix/transport_maps
 {% endif %}
-{% if _sasl is defined %}
+{% if _sasl is defined and _sasl | length %}
 smtp_sasl_auth_enable = yes
 smtp_sasl_security_options = noanonymous
 smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
