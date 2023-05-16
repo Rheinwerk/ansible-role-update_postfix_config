@@ -18,7 +18,9 @@
     mode: 0644
 
 - name: Configure Postfix _sasl
-  when: _sasl is defined
+  when:
+    - _sasl is defined and _sasl | length
+    - _postfix.relay is defined and _postfix.relay | length
   tags:
     - molecule-idempotence-notest
   block:
@@ -71,17 +73,20 @@
         owner: root
         group: root
 
-    - name: Create transport_maps file
-      ansible.builtin.template:
-        src: etc/postfix/transport_maps.j2
-        dest: /etc/postfix/transport_maps
-        mode: 0644
-        owner: root
-        group: root
-
     - name: Add taggingsmtp transport to master.cf
       ansible.builtin.lineinfile:
         path: /etc/postfix/master.cf
         regexp: '^taggingsmtp'
         insertafter: '^smtp.*unix.*smtp$'
         line: 'taggingsmtp      unix  -       -       -       -       -       smtp -o smtp_header_checks=regexp:/etc/postfix/header_checks'
+
+- name: Create transport_maps file
+  when:
+    - _postfix.tagging_transport is defined
+    - _postfix.relay is defined and _postfix.relay | length
+  ansible.builtin.template:
+    src: etc/postfix/transport_maps.j2
+    dest: /etc/postfix/transport_maps
+    mode: 0644
+    owner: root
+    group: root
