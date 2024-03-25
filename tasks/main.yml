@@ -1,6 +1,13 @@
 # vim:ft=ansible:ts=2:et:
 ---
 
+# FIXME: https://ansible.readthedocs.io/projects/lint/rules/ignore-errors/
+- name: Include SES credentials if present # noqa ignore-errors
+  ansible.builtin.include_vars:
+    file: /etc/postfix/ses_credentials.yml
+    name: _sasl
+  ignore_errors: yes
+
 - name: Create postfix configuration file
   ansible.builtin.template:
     src: etc/postfix/main.cf.j2
