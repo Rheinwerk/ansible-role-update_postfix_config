@@ -4,7 +4,7 @@
   when: ansible_system_vendor == 'Amazon EC2'
   # when AWS Condition does not work for Lints..
   block:
-    - name: Decypt SES Credentials via KMS # noqa jinja[invalid]
+    - name: Decrypt SES Credentials via KMS # noqa jinja[invalid]
       ansible.builtin.shell: |
         aws kms decrypt --region eu-central-1 --ciphertext-blob fileb://<(echo {{ lookup('ansible.builtin.file', '/etc/postfix/ses_credentials.yml') }} | base64 -d) --output text --query Plaintext | base64 -d
       args:
