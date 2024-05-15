@@ -11,6 +11,7 @@
         executable: /bin/bash
       register: _ses_credentials_kms_decrypted
       changed_when: false
+      check_mode: false
 
     - name: Set _sasl fact
       ansible.builtin.set_fact:
