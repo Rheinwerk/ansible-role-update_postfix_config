@@ -1,9 +1,0 @@
----
-- hosts: localhost
-  connection: local
-  become: yes
-  become_user: root
-  pre_tasks:
-    - ansible.builtin.apt: pkg=postfix state=present
-  roles:
-    - ansible-role-update_postfix_config
