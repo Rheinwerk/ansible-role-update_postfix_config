@@ -4,7 +4,7 @@
   when: ansible_system_vendor == 'Amazon EC2'
   # when AWS Condition does not work for Lints..
   block:
-    - name: Decrypt SES Credentials via KMS # noqa jinja[invalid]
+    - name: Decrypt SES Credentials via KMS # noqa jinja[invalid] risky-shell-pipe
       ansible.builtin.shell: |
         aws kms decrypt --region eu-central-1 --ciphertext-blob fileb://<(echo {{ lookup('ansible.builtin.file', '/etc/postfix/ses_credentials.yml') }} | base64 -d) --output text --query Plaintext | base64 -d
       args:
@@ -22,7 +22,7 @@
   ansible.builtin.template:
     src: etc/postfix/main.cf.j2
     dest: /etc/postfix/main.cf
-    mode: 0644
+    mode: "0644"
     owner: root
     group: root
 
@@ -32,12 +32,12 @@
     dest: /etc/mailname
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
 
 - name: Configure Postfix _sasl
   when:
-    - _sasl is defined and _sasl | length
-    - _postfix.relay is defined and _postfix.relay | length
+    - _sasl is defined and _sasl | length > 0
+    - _postfix.relay is defined and _postfix.relay | length > 0
   tags:
     - molecule-idempotence-notest
   block:
@@ -47,7 +47,7 @@
         dest: "/{{ item }}"
         owner: root
         group: root
-        mode: 0600
+        mode: "0600"
       with_items:
         - "etc/postfix/sasl_passwd"
 
@@ -58,7 +58,7 @@
     - name: Restrict permissions on Postfix SASL Map
       ansible.builtin.file:
         name: "/etc/postfix/sasl_passwd.db"
-        mode: 0640
+        mode: "0640"
         owner: root
         group: postfix
 
@@ -74,7 +74,7 @@
   ansible.builtin.template:
     src: etc/aliases.j2
     dest: /etc/aliases
-    mode: 0644
+    mode: "0644"
     owner: root
     group: root
   notify: Convert aliases
@@ -86,7 +86,7 @@
       ansible.builtin.template:
         src: etc/postfix/header_checks.j2
         dest: /etc/postfix/header_checks
-        mode: 0644
+        mode: "0644"
         owner: root
         group: root
 
@@ -100,10 +100,10 @@
 - name: Create transport_maps file
   when:
     - _postfix.tagging_transport is defined
-    - _postfix.relay is defined and _postfix.relay | length
+    - _postfix.relay is defined and _postfix.relay | length > 0
   ansible.builtin.template:
     src: etc/postfix/transport_maps.j2
     dest: /etc/postfix/transport_maps
-    mode: 0644
+    mode: "0644"
     owner: root
     group: root
