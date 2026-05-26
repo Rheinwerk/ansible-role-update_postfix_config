@@ -38,6 +38,9 @@ smtp_tls_note_starttls_offer = yes
 {% endif %}
 mynetworks = 127.0.0.0/8
 mailbox_size_limit = 0
+{% if _postfix.message_size_limit is defined %}
+message_size_limit = {{ _postfix.message_size_limit }}
+{% endif %}
 recipient_delimiter = +
 inet_protocols = ipv4
 inet_interfaces = 127.0.0.1
