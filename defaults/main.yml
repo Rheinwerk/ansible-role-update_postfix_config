@@ -24,6 +24,8 @@ _postfix:
   # Optional
   tagging_transport:
     recipient_regexp_filter: "someone.*@example.com"
+  # Optional; overrides postfix default (10240000 bytes)
+  # message_size_limit: 40000000
 
 # Optional
 _sasl:
