@@ -18,7 +18,7 @@ append_dot_mydomain = no
 readme_directory = no
 
 smtpd_relay_restrictions = permit_mynetworks defer_unauth_destination
-myhostname = {{ ansible_hostname }}.{{ _postfix.domain }}
+myhostname = {{ ansible_facts['hostname'] }}.{{ _postfix.domain }}
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 myorigin = /etc/mailname

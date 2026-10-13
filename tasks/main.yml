@@ -1,7 +1,7 @@
 # vim:ft=ansible:ts=2:et:
 ---
 - name: Decrypt SES Credentials via KMS inside AWS
-  when: ansible_system_vendor == 'Amazon EC2'
+  when: ansible_facts['system_vendor'] == 'Amazon EC2'
   # when AWS Condition does not work for Lints..
   block:
     - name: Decrypt SES Credentials via KMS # noqa jinja[invalid] risky-shell-pipe
@@ -28,7 +28,7 @@
 
 - name: Set /etc/mailname
   ansible.builtin.copy:
-    content: "{{ ansible_hostname }}.{{ _postfix.domain }}"
+    content: "{{ ansible_facts['hostname'] }}.{{ _postfix.domain }}"
     dest: /etc/mailname
     owner: root
     group: root
