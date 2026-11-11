@@ -16,15 +16,15 @@
     group: root
     mode: "0644"
 
-# Every task under a `when` evaluates it again, and on EC2 that runs the KMS decrypt again. The cleanup
-# sits on the outer block, so it does not depend on the decrypt and runs when the decrypt fails (CDINFRA-1262)
+# The conditions use _update_postfix_config_sasl_enabled, so only the sasl_passwd template runs the KMS
+# decrypt. The cleanup sits on the outer block, so it runs when the decrypt fails (CDINFRA-1262)
 - name: Configure Postfix _sasl
   when: _postfix.relay is defined and _postfix.relay | length > 0
   tags:
     - molecule-idempotence-notest
   block:
     - name: Create Postfix SASL map
-      when: _update_postfix_config_sasl | length > 0
+      when: _update_postfix_config_sasl_enabled | bool
       block:
         - name: Create Source File for SASL Password Map
           ansible.builtin.template:

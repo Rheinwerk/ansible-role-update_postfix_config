@@ -14,7 +14,7 @@ Role Variables
 --------------
 
 There is one main variable that drives this role: `_postfix`. It is a map that contains all configuration and settings for this role. There is an additional optional variable `_sasl`, which, if defined, controls setting up sasl in the postfix configuration.
-On EC2 instances the role ignores `_sasl` and decrypts the SES credentials from `/etc/postfix/ses_credentials.yml` with KMS instead.
+On EC2 instances the role ignores `_sasl` and decrypts the SES credentials from `/etc/postfix/ses_credentials.yml` with KMS instead, once per run and only when `_postfix.relay` is set.
 Please see `defaults/main.yml` for details.
 
 Dependencies
