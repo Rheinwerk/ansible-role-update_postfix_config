@@ -1,1 +1,3 @@
-[{{ _postfix.relay.host }}]:{{ _postfix.relay.port }} {{ _update_postfix_config_sasl.username }}:{{ _update_postfix_config_sasl.password }}
+{# set: every reference to _update_postfix_config_sasl runs the KMS decrypt again #}
+{% set _credentials = _update_postfix_config_sasl %}
+[{{ _postfix.relay.host }}]:{{ _postfix.relay.port }} {{ _credentials.username }}:{{ _credentials.password }}
