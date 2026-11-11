@@ -28,7 +28,7 @@ relayhost = [{{ _postfix.relay.host }}]:{{ _postfix.relay.port }}
 {% if _postfix.tagging_transport is defined %}
 transport_maps = regexp:/etc/postfix/transport_maps
 {% endif %}
-{% if _sasl is defined and _sasl | length %}
+{% if _update_postfix_config_sasl | length %}
 smtp_sasl_auth_enable = yes
 smtp_sasl_security_options = noanonymous
 smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
