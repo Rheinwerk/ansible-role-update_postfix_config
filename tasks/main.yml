@@ -16,41 +16,44 @@
     group: root
     mode: "0644"
 
+# Every task under a `when` evaluates it again, and on EC2 that runs the KMS decrypt again. The cleanup
+# sits on the outer block, so it does not depend on the decrypt and runs when the decrypt fails (CDINFRA-1262)
 - name: Configure Postfix _sasl
-  when:
-    - _update_postfix_config_sasl | length > 0
-    - _postfix.relay is defined and _postfix.relay | length > 0
+  when: _postfix.relay is defined and _postfix.relay | length > 0
   tags:
     - molecule-idempotence-notest
   block:
-    - name: Create Source File for SASL Password Map
-      ansible.builtin.template:
-        src: "{{ item }}.j2"
-        dest: "/{{ item }}"
-        owner: root
-        group: root
-        mode: "0600"
-      with_items:
-        - "etc/postfix/sasl_passwd"
+    - name: Create Postfix SASL map
+      when: _update_postfix_config_sasl | length > 0
+      block:
+        - name: Create Source File for SASL Password Map
+          ansible.builtin.template:
+            src: "{{ item }}.j2"
+            dest: "/{{ item }}"
+            owner: root
+            group: root
+            mode: "0600"
+          # diff: false, because a diff would put the SES credentials into the task result
+          diff: false
+          with_items:
+            - "etc/postfix/sasl_passwd"
 
-    - name: Create Postfix SASL Map
-      ansible.builtin.command: postmap hash:/etc/postfix/sasl_passwd
-      changed_when: false
+        - name: Create Postfix SASL Map
+          ansible.builtin.command: postmap hash:/etc/postfix/sasl_passwd
+          changed_when: false
 
-    - name: Restrict permissions on Postfix SASL Map
-      ansible.builtin.file:
-        name: "/etc/postfix/sasl_passwd.db"
-        mode: "0640"
-        owner: root
-        group: postfix
+        - name: Restrict permissions on Postfix SASL Map
+          ansible.builtin.file:
+            name: "/etc/postfix/sasl_passwd.db"
+            mode: "0640"
+            owner: root
+            group: postfix
 
   always:
     - name: Delete Temp File for SASL Passwords
       ansible.builtin.file:
         name: "/etc/postfix/sasl_passwd"
         state: absent
-      tags:
-        - molecule-idempotence-notest
 
 - name: Create aliases
   ansible.builtin.template:
