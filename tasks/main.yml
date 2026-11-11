@@ -1,23 +1,5 @@
 # vim:ft=ansible:ts=2:et:
 ---
-- name: Decrypt SES Credentials via KMS inside AWS
-  when: ansible_facts['system_vendor'] == 'Amazon EC2'
-  # when AWS Condition does not work for Lints..
-  block:
-    - name: Decrypt SES Credentials via KMS # noqa jinja[invalid] risky-shell-pipe
-      ansible.builtin.shell: |
-        aws kms decrypt --region eu-central-1 --ciphertext-blob fileb://<(echo {{ lookup('ansible.builtin.file', '/etc/postfix/ses_credentials.yml') }} | base64 -d) --output text --query Plaintext | base64 -d
-      args:
-        executable: /bin/bash
-      register: _ses_credentials_kms_decrypted
-      changed_when: false
-      check_mode: false
-
-    - name: Set _sasl fact
-      ansible.builtin.set_fact:
-        _sasl: "{{ _ses_credentials_kms_decrypted.stdout | from_yaml }}"
-      failed_when: _sasl.username is not defined and _sasl.password is not defined
-
 - name: Create postfix configuration file
   ansible.builtin.template:
     src: etc/postfix/main.cf.j2
@@ -36,7 +18,7 @@
 
 - name: Configure Postfix _sasl
   when:
-    - _sasl is defined and _sasl | length > 0
+    - _update_postfix_config_sasl | length > 0
     - _postfix.relay is defined and _postfix.relay | length > 0
   tags:
     - molecule-idempotence-notest
