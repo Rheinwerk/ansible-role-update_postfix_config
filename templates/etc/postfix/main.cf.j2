@@ -1,3 +1,4 @@
+{{ ansible_managed | comment }}
 # See /usr/share/postfix/main.cf.dist for a commented, more complete version
 #
 #
@@ -18,14 +19,14 @@ append_dot_mydomain = no
 readme_directory = no
 
 smtpd_relay_restrictions = permit_mynetworks defer_unauth_destination
-myhostname = {{ ansible_facts['hostname'] }}.{{ _postfix.domain }}
+myhostname = {{ ansible_facts['hostname'] }}.{{ _postfix_domain }}
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 myorigin = /etc/mailname
-{% if _postfix.relay is defined and _postfix.relay | length  %}
-relayhost = [{{ _postfix.relay.host }}]:{{ _postfix.relay.port }}
+{% if _postfix_relay | length > 0 %}
+relayhost = [{{ _postfix_relay.host }}]:{{ _postfix_relay.port }}
 {% endif %}
-{% if _postfix.tagging_transport is defined %}
+{% if _postfix_tagging_transport | length > 0 %}
 transport_maps = regexp:/etc/postfix/transport_maps
 {% endif %}
 {% if _update_postfix_config_sasl_enabled | bool %}
@@ -38,8 +39,8 @@ smtp_tls_note_starttls_offer = yes
 {% endif %}
 mynetworks = 127.0.0.0/8
 mailbox_size_limit = 0
-{% if _postfix.message_size_limit is defined %}
-message_size_limit = {{ _postfix.message_size_limit }}
+{% if _postfix_message_size_limit is not none %}
+message_size_limit = {{ _postfix_message_size_limit }}
 {% endif %}
 recipient_delimiter = +
 inet_protocols = ipv4

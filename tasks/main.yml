@@ -1,5 +1,10 @@
 # vim:ft=ansible:ts=2:et:
 ---
+- name: Assert
+  ansible.builtin.import_tasks: assert.yml
+  tags:
+    - always
+
 - name: Create postfix configuration file
   ansible.builtin.template:
     src: etc/postfix/main.cf.j2
@@ -10,7 +15,7 @@
 
 - name: Set /etc/mailname
   ansible.builtin.copy:
-    content: "{{ ansible_facts['hostname'] }}.{{ _postfix.domain }}"
+    content: "{{ ansible_facts['hostname'] }}.{{ _postfix_domain }}"
     dest: /etc/mailname
     owner: root
     group: root
@@ -19,7 +24,7 @@
 # The conditions use _update_postfix_config_sasl_enabled, so only the sasl_passwd template runs the KMS
 # decrypt. The cleanup sits on the outer block, so it runs when the decrypt fails (CDINFRA-1262)
 - name: Configure Postfix _sasl
-  when: _postfix.relay is defined and _postfix.relay | length > 0
+  when: _postfix_relay | length > 0
   tags:
     - molecule-idempotence-notest
   block:
@@ -35,7 +40,7 @@
             mode: "0600"
           # diff: false, because a diff would put the SES credentials into the task result
           diff: false
-          with_items:
+          loop:
             - "etc/postfix/sasl_passwd"
 
         - name: Create Postfix SASL Map
@@ -65,7 +70,7 @@
   notify: Convert aliases
 
 - name: Configure Postfix tagging transport
-  when: _postfix.tagging_transport is defined
+  when: _postfix_tagging_transport | length > 0
   block:
     - name: Create header_checks file
       ansible.builtin.template:
@@ -84,8 +89,8 @@
 
 - name: Create transport_maps file
   when:
-    - _postfix.tagging_transport is defined
-    - _postfix.relay is defined and _postfix.relay | length > 0
+    - _postfix_tagging_transport | length > 0
+    - _postfix_relay | length > 0
   ansible.builtin.template:
     src: etc/postfix/transport_maps.j2
     dest: /etc/postfix/transport_maps

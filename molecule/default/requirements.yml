@@ -1,3 +1,6 @@
+---
+# The postfix install role the CenterDevice images use
 - src: https://github.com/Rheinwerk/ansible-role-postfix.git
   name: postfix
   scm: git
+  version: v0.5.0

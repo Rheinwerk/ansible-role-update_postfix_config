@@ -1,33 +1,43 @@
 ---
 # defaults file for ansible-role-update_postfix_config
 
+# Environment the taggingsmtp transport puts into the subject, [<name>.<account>.<env>]
 CD_ENV: # noqa var-naming
   iaas:
     name: "unset"
     account: "unset"
     env: "unset"
 
-_postfix:
-  domain: domain.example.com
-  default_aliases:
-    root: []
-    postmaster: [ root ]
-  default_alias_recipients:
-    - "default@example.com"
-  aliases:
-    explicit:
-      - "explicit1@example.com"
-      - "explicit2@example.com"
-  relay:
-    host: "smarthost.example.com"
-    port: 465
-  # Optional
-  tagging_transport:
-    recipient_regexp_filter: "someone.*@example.com"
-  # Optional; overrides postfix default (10240000 bytes)
-  # message_size_limit: 40000000
+# Mail domain: myhostname and /etc/mailname become <hostname>.<domain>
+_postfix_domain: "{{ SITE.email.domain }}"
 
-# Optional
+# Aliases every host gets, {<alias>: [<recipients>]}; they win over _postfix_aliases with the
+# same name. An alias with an empty list goes to _postfix_default_alias_recipients
+_postfix_default_aliases: "{{ SITE.email.default_aliases }}"
+
+# Recipients of the aliases with an empty list
+_postfix_default_alias_recipients:
+  - "{{ SITE.email.default_infrastructure_alert_address }}"
+
+# Host-specific aliases, same format as _postfix_default_aliases
+_postfix_aliases: {}
+
+# Smarthost, relayhost = [<host>]:<port>; {} delivers directly
+_postfix_relay:
+  host: "{{ SITE.email.relay.host }}"
+  port: "{{ SITE.email.relay.port | default(25) }}"
+
+# Mail to recipients matching this Postfix regexp goes through the taggingsmtp transport, which
+# puts CD_ENV.iaas into the subject; needs _postfix_relay. {} disables it
+_postfix_tagging_transport:
+  recipient_regexp_filter: "/infrastructure.*@centerdevice.com/"
+
+# message_size_limit in bytes; null keeps the Postfix default (10240000)
+_postfix_message_size_limit: ~
+
+# SMTP credentials for the relay outside EC2 ({} disables SASL); on EC2 the role decrypts the
+# SES credentials from /etc/postfix/ses_credentials.yml with KMS instead
 _sasl:
   username: abc
   password: def
+# vim:ft=ansible:ts=2:et:

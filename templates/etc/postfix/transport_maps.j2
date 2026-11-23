@@ -1,1 +1,2 @@
-{{ _postfix.tagging_transport.recipient_regexp_filter }}	taggingsmtp:[{{ _postfix.relay.host }}]:{{ _postfix.relay.port }}
+{{ ansible_managed | comment }}
+{{ _postfix_tagging_transport.recipient_regexp_filter }}	taggingsmtp:[{{ _postfix_relay.host }}]:{{ _postfix_relay.port }}

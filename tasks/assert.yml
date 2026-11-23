@@ -1,0 +1,60 @@
+---
+# The dict of v0.x is gone; a play that still sets it would get the defaults without noticing
+- name: Assert the old _postfix dict is not set
+  ansible.builtin.assert:
+    that:
+      - _postfix is not defined
+    fail_msg: "_postfix (a dict) was replaced by the flat _postfix_* variables in v1.0.0, see the README"
+    quiet: true
+  tags:
+    - always
+
+- name: Assert the domain and the aliases
+  ansible.builtin.assert:
+    that:
+      - _postfix_domain is string
+      - _postfix_domain is match('^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*\\Z')
+      - _postfix_default_aliases is mapping
+      - _postfix_aliases is mapping
+      - _postfix_all_aliases.keys() | reject('match', '^[a-z0-9][a-z0-9._+-]*\\Z') | list | length == 0
+      - _postfix_all_aliases.values() | reject('sequence') | list | length == 0
+      - _postfix_all_aliases.values() | select('string') | list | length == 0
+      - _postfix_all_aliases.values() | flatten | reject('string') | list | length == 0
+      - _postfix_all_aliases.values() | flatten | reject('match', '^[^\\s,:]+\\Z') | list | length == 0
+      - _postfix_default_alias_recipients is sequence
+      - _postfix_default_alias_recipients is not string
+      - _postfix_default_alias_recipients | length > 0
+      - _postfix_default_alias_recipients | reject('string') | list | length == 0
+      - _postfix_default_alias_recipients | reject('match', '^[^\\s,:]+\\Z') | list | length == 0
+    fail_msg: >-
+      _postfix_domain must be a domain name; _postfix_default_aliases and _postfix_aliases map alias names
+      ([a-z0-9._+-]) to lists of recipients without whitespace, commas or colons; _postfix_default_alias_recipients
+      is a non-empty list of such recipients
+    quiet: true
+  vars:
+    _postfix_all_aliases: "{{ _postfix_aliases | combine(_postfix_default_aliases) if (_postfix_aliases is mapping and _postfix_default_aliases is mapping) else {} }}"
+  tags:
+    - always
+
+- name: Assert the relay, the tagging transport, the message size limit and SASL
+  ansible.builtin.assert:
+    that:
+      - _postfix_relay is mapping
+      - _postfix_relay | length == 0 or (_postfix_relay.host is defined and _postfix_relay.port is defined)
+      - _postfix_relay.host is not defined or _postfix_relay.host is match('^[^\\s\\[\\]:]+\\Z')
+      - _postfix_relay.port is not defined or (_postfix_relay.port is not boolean and _postfix_relay.port | string is match('^[0-9]+\\Z'))
+      - _postfix_relay.port is not defined or (_postfix_relay.port | int >= 1 and _postfix_relay.port | int <= 65535)
+      - _postfix_tagging_transport is mapping
+      - _postfix_tagging_transport | length == 0 or _postfix_relay | length > 0
+      - _postfix_tagging_transport | length == 0 or _postfix_tagging_transport.recipient_regexp_filter is defined
+      - _postfix_tagging_transport.recipient_regexp_filter is not defined or _postfix_tagging_transport.recipient_regexp_filter is match('^/\\S+/[a-z]*\\Z')
+      - _postfix_message_size_limit is none or (_postfix_message_size_limit is not boolean and _postfix_message_size_limit | string is match('^[0-9]+\\Z') and _postfix_message_size_limit | int > 0)
+      - _sasl is mapping
+      - _sasl | length == 0 or (_sasl.username is defined and _sasl.password is defined)
+    fail_msg: >-
+      _postfix_relay must be {} or have host (no whitespace, brackets or colons) and port (1-65535);
+      _postfix_tagging_transport must be {} or have recipient_regexp_filter (/regexp/flags) and needs _postfix_relay;
+      _postfix_message_size_limit is null or a positive integer; _sasl is {} or has username and password
+    quiet: true
+  tags:
+    - always
