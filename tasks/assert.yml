@@ -19,8 +19,8 @@
       - _postfix_all_aliases.keys() | reject('match', '^[a-z0-9][a-z0-9._+-]*\\Z') | list | length == 0
       - _postfix_all_aliases.values() | reject('sequence') | list | length == 0
       - _postfix_all_aliases.values() | select('string') | list | length == 0
-      - _postfix_all_aliases.values() | flatten | reject('string') | list | length == 0
-      - _postfix_all_aliases.values() | flatten | reject('match', '^[^\\s,:]+\\Z') | list | length == 0
+      - _postfix_all_aliases.values() | flatten(skip_nulls=False) | reject('string') | list | length == 0
+      - _postfix_all_aliases.values() | flatten(skip_nulls=False) | reject('match', '^[^\\s,:]+\\Z') | list | length == 0
       - _postfix_default_alias_recipients is sequence
       - _postfix_default_alias_recipients is not string
       - _postfix_default_alias_recipients | length > 0
@@ -51,10 +51,12 @@
       - _postfix_message_size_limit is none or (_postfix_message_size_limit is not boolean and _postfix_message_size_limit | string is match('^[0-9]+\\Z') and _postfix_message_size_limit | int > 0)
       - _sasl is mapping
       - _sasl | length == 0 or (_sasl.username is defined and _sasl.password is defined)
+      - _sasl.username is not defined or _sasl.username is string
+      - _sasl.password is not defined or _sasl.password is string
     fail_msg: >-
       _postfix_relay must be {} or have host (no whitespace, brackets or colons) and port (1-65535);
       _postfix_tagging_transport must be {} or have recipient_regexp_filter (/regexp/flags) and needs _postfix_relay;
-      _postfix_message_size_limit is null or a positive integer; _sasl is {} or has username and password
+      _postfix_message_size_limit is null or a positive integer; _sasl is {} or has username and password as strings
     quiet: true
   tags:
     - always

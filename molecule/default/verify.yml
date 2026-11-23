@@ -55,3 +55,20 @@
     - name: Postfix accepts the configuration
       ansible.builtin.command: postfix check
       changed_when: false
+
+    - name: Look up the tagging transport, the subject rewrite and an alias
+      ansible.builtin.command: "{{ item }}"
+      loop:
+        - postmap -q infrastructure-x@centerdevice.com regexp:/etc/postfix/transport_maps
+        - "postmap -q 'Subject: Hello' regexp:/etc/postfix/header_checks"
+        - postalias -q molecule hash:/etc/aliases
+      register: verify_lookups
+      changed_when: false
+
+    - name: The lookups resolve
+      ansible.builtin.assert:
+        that:
+          - verify_lookups.results[0].stdout == 'taggingsmtp:[relay.example.test]:587'
+          - "verify_lookups.results[1].stdout == 'REPLACE Subject: [unset.unset.unset] Hello'"
+          - verify_lookups.results[2].stdout == 'root'
+        fail_msg: "{{ verify_lookups.results | map(attribute='stdout') | list }}"

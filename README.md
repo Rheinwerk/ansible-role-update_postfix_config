@@ -23,8 +23,8 @@ or `_sasl`, or the `_postfix` dict of v0.x fails the run at the start.
 | `_postfix_domain` | `"{{ SITE.email.domain }}"` | Mail domain; `myhostname` and `/etc/mailname` become `<hostname>.<domain>`. |
 | `_postfix_default_aliases` | `"{{ SITE.email.default_aliases }}"` | Aliases every host gets, `{<alias>: [<recipients>]}`; they win over `_postfix_aliases` with the same name. |
 | `_postfix_default_alias_recipients` | `["{{ SITE.email.default_infrastructure_alert_address }}"]` | Recipients of every alias with an empty list. |
-| `_postfix_aliases` | `{}` | Host-specific aliases, same format. |
-| `_postfix_relay` | `host: "{{ SITE.email.relay.host }}"`, `port: "{{ SITE.email.relay.port \| default(25) }}"` | Smarthost (`relayhost = [<host>]:<port>`); `{}` delivers directly. |
+| `_postfix_aliases` | `{}` | Host-specific aliases, same format; every value is a list (`[]` for the default recipients). |
+| `_postfix_relay` | `host: "{{ SITE.email.relay.host }}"`, `port: "{{ SITE.email.relay.port \| default(25) }}"` | Smarthost (`relayhost = [<host>]:<port>`); `{}` delivers directly and needs `_postfix_tagging_transport: {}` too. On EC2 the SASL and TLS settings stay on. |
 | `_postfix_tagging_transport` | `recipient_regexp_filter: "/infrastructure.*@centerdevice.com/"` | Mail to matching recipients goes through the `taggingsmtp` transport, which puts `[<CD_ENV.iaas.name>.<account>.<env>]` into the subject; needs `_postfix_relay`, `{}` disables it. |
 | `_postfix_message_size_limit` | `null` | `message_size_limit` in bytes; `null` keeps the Postfix default (10240000). |
 | `_sasl` | `username: abc`, `password: def` | SMTP credentials outside EC2, `{}` disables SASL there. |
