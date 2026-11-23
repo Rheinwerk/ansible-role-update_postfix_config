@@ -1,0 +1,66 @@
+---
+argument_specs:
+  main:
+    short_description: Configure Postfix as a local relay to a smarthost, with aliases, SASL and a subject-tagging transport
+    options:
+      CD_ENV:
+        type: dict
+        description:
+          - CenterDevice environment; the role reads iaas.name, iaas.account and iaas.env for the subject tag.
+      _postfix_domain:
+        type: str
+        description:
+          - Mail domain; myhostname and /etc/mailname become <hostname>.<domain>.
+      _postfix_default_aliases:
+        type: dict
+        description:
+          - "Aliases every host gets, C({<alias>: [<recipients>]}); they win over _postfix_aliases. An empty list means _postfix_default_alias_recipients."
+      _postfix_default_alias_recipients:
+        type: list
+        elements: str
+        description:
+          - Recipients of the aliases with an empty list.
+      _postfix_aliases:
+        type: dict
+        description:
+          - Host-specific aliases, same format as _postfix_default_aliases.
+      _postfix_relay:
+        type: dict
+        description:
+          - Smarthost; an empty dict delivers directly. host and port are required when it is not empty.
+        options:
+          host:
+            type: str
+            description:
+              - Host name of the smarthost.
+          port:
+            type: int
+            description:
+              - Port of the smarthost.
+      _postfix_tagging_transport:
+        type: dict
+        description:
+          - Subject-tagging transport for matching recipients; needs _postfix_relay. An empty dict disables it.
+        options:
+          recipient_regexp_filter:
+            type: str
+            description:
+              - Postfix regexp (C(/.../flags)) on the recipient address.
+      _postfix_message_size_limit:
+        type: int
+        description:
+          - message_size_limit in bytes; null keeps the Postfix default.
+      _sasl:
+        type: dict
+        description:
+          - SMTP credentials for the relay outside EC2; an empty dict disables SASL there.
+        options:
+          username:
+            type: str
+            description:
+              - SMTP user name.
+          password:
+            type: str
+            no_log: true
+            description:
+              - SMTP password.

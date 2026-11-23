@@ -1,0 +1,16 @@
+---
+# Fakes the consumer contract (SITE.email) the defaults read in the infrastructure repo, plus one
+# host alias and a message size limit the verify playbook checks
+SITE:
+  email:
+    domain: example.test
+    default_aliases:
+      root: []
+      postmaster: [root]
+    default_infrastructure_alert_address: alerts@example.test
+    relay:
+      host: relay.example.test
+      port: 587
+_postfix_aliases:
+  molecule: [root]
+_postfix_message_size_limit: 40000000

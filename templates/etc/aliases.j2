@@ -1,12 +1,10 @@
-# {{ ansible_managed }}
+{{ ansible_managed | comment }}
 
-{% if _postfix.default_aliases is defined %}
-{% set _dummy = _postfix.aliases.update(_postfix.default_aliases) %}
-{% endif %}
-{% for alias, list in _postfix.aliases.items() %}
+{# the default aliases win over host aliases with the same name #}
+{% for alias, list in (_postfix_aliases | combine(_postfix_default_aliases)).items() %}
 {% if list %}
 {{ "%-24s" | format(alias + ":") }} {{ list | join(", ") }}
 {% else %}
-{{ "%-24s" | format(alias + ":") }} {{ _postfix.default_alias_recipients | join(", ") }}
+{{ "%-24s" | format(alias + ":") }} {{ _postfix_default_alias_recipients | join(", ") }}
 {% endif %}
 {% endfor %}

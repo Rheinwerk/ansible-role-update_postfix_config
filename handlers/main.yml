@@ -1,3 +1,4 @@
+---
 - name: Convert aliases
   ansible.builtin.command: /usr/bin/newaliases
   changed_when: false

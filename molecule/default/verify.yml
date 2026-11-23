@@ -1,0 +1,74 @@
+---
+# Values from tests/vars.yml on top of the role defaults
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Read the rendered files
+      ansible.builtin.slurp:
+        src: "{{ item }}"
+      loop:
+        - /etc/postfix/main.cf
+        - /etc/aliases
+        - /etc/postfix/transport_maps
+        - /etc/postfix/header_checks
+        - /etc/mailname
+        - /etc/postfix/master.cf
+      register: verify_files
+
+    - name: The files are rendered from the variables
+      ansible.builtin.assert:
+        that:
+          - "('myhostname = ' + ansible_facts['hostname'] + '.example.test') in main_cf"
+          - "'relayhost = [relay.example.test]:587' in main_cf"
+          - "'transport_maps = regexp:/etc/postfix/transport_maps' in main_cf"
+          - "'message_size_limit = 40000000' in main_cf"
+          - aliases is search('(?m)^molecule:\\s+root$')
+          - aliases is search('(?m)^postmaster:\\s+root$')
+          - aliases is search('(?m)^root:\\s+alerts@example\\.test$')
+          - "'/infrastructure.*@centerdevice.com/\ttaggingsmtp:[relay.example.test]:587' in files[2]"
+          - "'[unset.unset.unset]' in files[3]"
+          - files[4] | trim == ansible_facts['hostname'] + '.example.test'
+          - files[5] is search('(?m)^taggingsmtp\\s')
+        fail_msg: "{{ files }}"
+      vars:
+        files: "{{ verify_files.results | map(attribute='content') | map('b64decode') | list }}"
+        main_cf: "{{ files[0].splitlines() }}"
+        aliases: "{{ files[1] }}"
+
+    - name: The SASL source file is gone, its map is not world-readable
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /etc/postfix/sasl_passwd
+        - /etc/postfix/sasl_passwd.db
+      register: verify_sasl
+
+    - name: Check the SASL files
+      ansible.builtin.assert:
+        that:
+          - not verify_sasl.results[0].stat.exists
+          - verify_sasl.results[1].stat.exists
+          - verify_sasl.results[1].stat.mode == '0640'
+
+    - name: Postfix accepts the configuration
+      ansible.builtin.command: postfix check
+      changed_when: false
+
+    - name: Look up the tagging transport, the subject rewrite and an alias
+      ansible.builtin.command: "{{ item }}"
+      loop:
+        - postmap -q infrastructure-x@centerdevice.com regexp:/etc/postfix/transport_maps
+        - "postmap -q 'Subject: Hello' regexp:/etc/postfix/header_checks"
+        - postalias -q molecule hash:/etc/aliases
+      register: verify_lookups
+      changed_when: false
+
+    - name: The lookups resolve
+      ansible.builtin.assert:
+        that:
+          - verify_lookups.results[0].stdout == 'taggingsmtp:[relay.example.test]:587'
+          - "verify_lookups.results[1].stdout == 'REPLACE Subject: [unset.unset.unset] Hello'"
+          - verify_lookups.results[2].stdout == 'root'
+        fail_msg: "{{ verify_lookups.results | map(attribute='stdout') | list }}"
